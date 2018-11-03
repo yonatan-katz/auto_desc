@@ -21,33 +21,38 @@ def load_caption(caption_fname):
    start and end are given in the seconds 
    since start of the file
 '''
-def load_scene(video_fname,start,end,crop_size=256):
+def load_scene(video_fname,start,end,verbose=False,crop_size=256):
     print(video_fname)
     cap = cv2.VideoCapture(video_fname)
     print('cap',cap.isOpened())
     cap.set(cv2.CAP_PROP_POS_MSEC,start)    
     timestamp = cap.get(cv2.CAP_PROP_POS_MSEC)
     print('Frame timestamp:{}'.format(timestamp))
+    frames = []
     while(cap.isOpened()):
         ret, frame = cap.read()   
         if ret:        
             #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)    
             frame = cv2.resize(frame,(crop_size,crop_size), interpolation = cv2.INTER_CUBIC)
-            cv2.imshow('frame',frame)
-            timestamp = cap.get(cv2.CAP_PROP_POS_MSEC)        
-            if timestamp > end:
-                break            
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-            time.sleep(0.01)
-        else:
-            return
+            frames.append(np.array(frame))
+            if verbose:
+                cv2.imshow('frame',frame)
+                timestamp = cap.get(cv2.CAP_PROP_POS_MSEC)        
+                if timestamp > end:
+                    break            
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+                time.sleep(0.01)
+        else:     
+            break
     
     cap.release()
     cv2.destroyAllWindows()
     
+    return frames
     
-def test(caption_fname,video_folder):
+    
+def scene_generator(caption_fname,video_folder):
     captions = load_caption(caption_fname)
     availabel_videos = glob.glob(os.path.join(video_folder,'*.mp4'))
     availabel_videos_keys = [x.split('.')[0].split('/')[-1] for x in availabel_videos]
@@ -60,13 +65,11 @@ def test(caption_fname,video_folder):
                 sentence = scene_meta['sentences'][index]
                 print(timestamp,sentence)
                 video_fname = os.path.join(video_folder,video_key+".mp4")
-                load_scene(video_fname=video_fname,
+                frames = load_scene(video_fname=video_fname,
                     start=float(timestamp[0])*1000.,
-                    end=float(timestamp[1])*1000.)               
+                    end=float(timestamp[1])*1000.)
                 
-                
-            #video_fname = os.path.join(video_folder,video_key+".mp4")
-            #load_scene(video_fname,)
+                yield frames,sentence           
         else:
             print('Skip video:{}'.format(video_key))
         
@@ -79,7 +82,9 @@ if __name__ == "__main__":
             'video_folder' :'/home/yonic/repos/auto_desc/dataset/video/train/'
     }
     
-    test(**config)
+    g = scene_generator(**config)
+    frames,sentence = next(g)
+    print(frames, sentence)
     
     
     
