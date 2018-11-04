@@ -7,6 +7,7 @@ Created on Sat Nov  3 21:54:37 2018
 """
 import tensorflow as tf
 import os
+import auto_desc.utils as utils
 
 # The UCF-101 dataset has 101 classes
 NUM_CLASSES = 101
@@ -17,7 +18,7 @@ CHANNELS = 3
 NUM_FRAMES_PER_CLIP = 16
 
 gpu_num = 1
-batch_size = 64
+batch_size = 1
 
 def conv3d(name, l_input, w, b):
   return tf.nn.bias_add(
@@ -111,15 +112,9 @@ def inference_c3d(_X, _dropout, batch_size, _weights, _biases):
 
   #return out
 
-def load_trained_model():
-  # Get the sets of images and labels for training, validation, and
-  # Tell TensorFlow that the model will be built into the default Graph.
-
-  # Create model directory  
-  use_pretrained_model = True 
-  model_filename = "/home/yonic/repos/auto_desc/models/c3d_ucf101_finetune_whole_iter_20000_TF.model"
-
-  with tf.Graph().as_default():    
+def load_trained_model():    
+    # Get the sets of images and labels for training, validation, and
+    # Tell TensorFlow that the model will be built into the default Graph.  
     images_placeholder, labels_placeholder = placeholder_inputs(batch_size * gpu_num)    
     logits = []      
     with tf.variable_scope('var_name') as var_scope:
@@ -152,23 +147,14 @@ def load_trained_model():
     for gpu_index in range(0, gpu_num):
       with tf.device('/gpu:%d' % gpu_index):       
         logit = inference_c3d(
-                        images_placeholder[gpu_index * batch_size:(gpu_index + 1) * batch_size,:,:,:,:],
-                        0.5,
-                        batch_size,
-                        weights,
-                        biases
-                        )        
-    logits.append(logit)
-    logits = tf.concat(logits,0)        
-    print(weights.values())    
-    init = tf.global_variables_initializer()
-
-    # Create a session for running Ops on the Graph.
-    sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
-    sess.run(init)
-    if os.path.isfile(model_filename) and use_pretrained_model:
-      saver.restore(sess, model_filename)
-      print('Model was loaded!')
+            images_placeholder[gpu_index * batch_size:(gpu_index + 1) * batch_size,:,:,:,:],
+            0.5,
+            batch_size,
+            weights,
+            biases)        
+    
+    logits.append(logit)    
+    logits = tf.concat(logits,0)                
       
-    return logit
+    return logit,images_placeholder,labels_placeholder
 
