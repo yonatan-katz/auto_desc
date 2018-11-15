@@ -18,7 +18,7 @@ CHANNELS = 3
 NUM_FRAMES_PER_CLIP = 16
 
 gpu_num = 1
-batch_size = 1
+batch_size = 32
 
 def conv3d(name, l_input, w, b):
   return tf.nn.bias_add(

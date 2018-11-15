@@ -5,17 +5,13 @@ Created on Sat Nov  3 15:25:07 2018
 
 @author: yonic
 """
-import json
 import numpy as np
 import cv2
 import glob
 import os
 import time
+import auto_desc.utils as utils
 
-def load_caption(caption_fname):
-    with open(caption_fname) as fd:
-        captions = json.load(fd)
-    return captions
 
 '''Load video scene accordnig to video file name, 
    start and end are given in the seconds 
@@ -53,7 +49,7 @@ def load_scene(video_fname,start,end,verbose=False,crop_size=256):
     
     
 def scene_generator(caption_fname,video_folder):
-    captions = load_caption(caption_fname)
+    captions = utils.load_caption(caption_fname)
     availabel_videos = glob.glob(os.path.join(video_folder,'*.mp4'))
     availabel_videos_keys = [x.split('.')[0].split('/')[-1] for x in availabel_videos]
     for video_key in availabel_videos_keys[10:]:    
@@ -78,8 +74,8 @@ def scene_generator(caption_fname,video_folder):
     
 if __name__ == "__main__":
     config = {
-            'caption_fname':'/home/yonic/repos/auto_desc/dataset/train.json',
-            'video_folder' :'/home/yonic/repos/auto_desc/dataset/video/train/'
+            'caption_fname':utils.CAPION_METADATA_FILE,
+            'video_folder' :utils.VIDEO_FOLDER
     }
     
     g = scene_generator(**config)

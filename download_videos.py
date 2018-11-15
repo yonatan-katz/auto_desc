@@ -10,8 +10,8 @@ import json
 import sys
 import wget
 import os
+import auto_desc.utils as utils
 
-BASE_FOLDER = 'https://ai.stanford.edu/~ranjaykrishna/actiongenome/'
 
 def main():
     parser = argparse.ArgumentParser(description='Download videos script')        
@@ -30,7 +30,7 @@ def main():
         for video in video_ids:
             full_fname = os.path.join(out_folder,video+'.mp4')
             if not os.path.exists(full_fname):
-                url = os.path.join(BASE_FOLDER,video+'.mp4')
+                url = os.path.join(utils.BASE_FOLDER,video+'.mp4')
                 print('Download {}'.format(url))
                 wget.download(url, out=out_folder)
             else:

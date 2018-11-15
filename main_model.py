@@ -11,6 +11,7 @@ import auto_desc.c3d_model as c3d_model
 import auto_desc.utils as utils
 import h5py
 import numpy as np
+import time
 
 def make_model():        
     out = {}
@@ -23,17 +24,23 @@ def make_model():
     c3d_model_saver.restore(sess, utils.C3D_MODEL)
     print('C3D_MODEL was loaded!')
     
-    fd = h5py.File(utils.C3D_MODEL_PCA)
-    u = np.array(fd['data']['U'])
-    out['pca_dense_matrix'] = pca_dense = tf.convert_to_tensor(u[:,0:utils.C3D_MODEL_PCA_FEATURES],name='pca_dense_matrix')    
+    #fd = h5py.File(utils.C3D_MODEL_PCA)
+    #u = np.array(fd['data']['U'])
+    #out['pca_dense_matrix'] = pca_dense = tf.convert_to_tensor(u[:,0:utils.C3D_MODEL_PCA_FEATURES],name='pca_dense_matrix')    
     
-    with tf.name_scope("c3d_model_out_pca"):
-         out['c3d_model_out_pca'] = c3d_model_out_pca = tf.matmul(out['c3d_model_out'],pca_dense)   
+    #with tf.name_scope("c3d_model_out_pca"):
+    #     out['c3d_model_out_pca'] = c3d_model_out_pca = tf.matmul(out['c3d_model_out'],pca_dense)   
+    
+    
     
     init = tf.global_variables_initializer()
     sess.run(init)
-    
-    print(out)    
+    data=np.random.rand(32,16,112,112,3)
+    print('Placeholder:',images_placeholder)
+    t1 = time.time()
+    r = sess.run(logit,feed_dict={images_placeholder:data})
+    t2 = time.time()
+    print("res shape:",r.shape,"time:",t2-t1)
     
 
 if __name__ == '__main__':
